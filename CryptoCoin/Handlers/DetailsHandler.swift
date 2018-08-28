@@ -62,26 +62,40 @@ extension DetailsVC {
     
     @objc public func updateMonthChart(historyArray: [String]){
         monthChart.removeAllSeries()
-        historyMonthPrices = historyArray.map{ Double($0)!}
+        if historyArray.isEmpty {
+            print("Error")
+        }else{
+        historyMonthPrices = historyArray.map{ Double($0) ?? 0.0}
         let series = ChartSeries(historyMonthPrices)
         series.area = true
         monthChart.add(series)
+        }
     }
     
     public func updateWeekChart(historyArray: [String]){
         weekChart.removeAllSeries()
-        historyWeekPrices = historyArray.map{ Double($0)!}
-        let series = ChartSeries(historyWeekPrices)
-        series.area = true
-        weekChart.add(series)
+        
+        if historyArray.isEmpty {
+            print("Error")
+        }else{
+            historyWeekPrices = historyArray.map{ Double($0)!}
+            let series = ChartSeries(historyWeekPrices)
+            series.area = true
+            weekChart.add(series)
+        }
+        
     }
     
     public func updateDayChart(historyArray: [String]){
         dayChart.removeAllSeries()
+        if historyArray.isEmpty {
+            print("Error")
+        }else{
         historyDayPrices = historyArray.map{Double($0)!}
         let series = ChartSeries(historyDayPrices)
         series.area = true
         dayChart.add(series)
+        }
     }
     
     public func uploadMonthHistory(coin: Coin){
@@ -98,13 +112,14 @@ extension DetailsVC {
                         do{
                             let json = try JSONDecoder().decode(DataHistory.self, from: data!)
                             self.historyMonth = json.data.coin
+                            print(self.historyMonth?.history as Any)
                         }
                         catch{
                             print(error)
                         }
                     }
                 }
-                self.updateMonthChart(historyArray: (self.historyMonth?.history)!)
+//                self.updateMonthChart(historyArray: (self.historyMonth?.history)!)
             }
         }
         task.resume()
@@ -130,14 +145,14 @@ extension DetailsVC {
                         }
                     }
                 }
-                self.updateWeekChart(historyArray: (self.historyWeek?.history)!)
+//                self.updateWeekChart(historyArray: self.historyWeek!.history)
             }
         }
         task.resume()
     }
     
     public func uploadDayHistory(coin: Coin){
-        let weekUrl = "https://api.coinranking.com/v1/public/coin/" + String(coin.id) + "?base=USD&timePeriod=7d"
+        let weekUrl = "https://api.coinranking.com/v1/public/coin/" + String(coin.id) + "?base=USD&timePeriod=24h"
         guard let url = URL(string: weekUrl) else {return}
         let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
             DispatchQueue.main.async {
@@ -156,6 +171,7 @@ extension DetailsVC {
                         }
                     }
                 }
+                
                 self.updateDayChart(historyArray: (self.historyDay?.history)!)
             }
         }
